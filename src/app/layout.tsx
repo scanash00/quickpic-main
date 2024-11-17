@@ -16,7 +16,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen antialiased`}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+      </head>
+      <body
+        className={`${inter.className} min-h-screen bg-[#111] text-white antialiased`}
+      >
         <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8">
           {children}
         </main>
