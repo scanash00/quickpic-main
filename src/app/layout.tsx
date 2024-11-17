@@ -15,8 +15,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "QuickPic - Quick Tools For Images",
-  description: "A bunch of simple tools for images. All free. No BS.",
+  title: "QuickPic",
+  description: "Quick and easy image tools",
+  metadataBase: new URL("http://localhost:3001"),
   icons: {
     icon: "/favicon.svg",
   },

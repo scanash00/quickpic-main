@@ -97,18 +97,18 @@ function SVGRenderer({ svgContent }: SVGRendererProps) {
 }
 
 function SaveAsPngButton({
-  svgContent,
+  imageContent,
   scale,
   imageMetadata,
 }: {
-  svgContent: string;
+  imageContent: string;
   scale: number;
   imageMetadata: { width: number; height: number; name: string };
 }) {
   const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
   const { convertToPng, canvasProps } = useSvgConverter({
     canvas: canvasRef,
-    svgContent,
+    svgContent: imageContent,
     scale,
     imageMetadata,
   });
@@ -166,11 +166,7 @@ function SvgToolCore(props: { fileUploaderProps: FileUploaderResult }) {
             onChange={setScale}
             options={scaleOptions}
           />
-          <img
-            src={props.fileUploaderProps.file.content}
-            alt="Preview"
-            className="mb-4 max-w-full"
-          />
+          <SVGRenderer svgContent={props.fileUploaderProps.file.content} />
           <div className="flex gap-4">
             <SaveAsPngButton
               imageContent={props.fileUploaderProps.file.content}
