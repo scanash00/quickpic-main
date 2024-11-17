@@ -20,10 +20,10 @@ export const styles = {
       "flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/60 transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20",
     title: "text-xl font-semibold text-white",
     subtitle: "mt-1 text-sm text-white/60",
-    buttonContainer: "flex items-center gap-2",
+    buttonContainer: "flex flex-col items-center gap-2",
     uploadButton:
-      "inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800",
-    dragText: "text-sm text-white/60",
+      "px-4 py-2 text-sm font-medium text-white/90 bg-white/10 rounded-lg border border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 active:bg-white/30",
+    dragText: "text-sm font-medium text-white/60",
   },
 
   // Controls
