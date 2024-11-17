@@ -147,8 +147,10 @@ export function SquareImage() {
                 <button
                   key={option.id}
                   onClick={() => setSelectedBg(option.id)}
-                  className={`${styles.secondaryButton} ${
-                    selectedBg === option.id ? "bg-accent/20" : ""
+                  className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    selectedBg === option.id
+                      ? "border-2 border-blue-500 bg-white/5"
+                      : "border border-white/20 hover:border-white/40"
                   }`}
                 >
                   {option.name}

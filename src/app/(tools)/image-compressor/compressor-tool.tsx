@@ -143,11 +143,11 @@ function CompressorTool() {
                 <button
                   key={option.id}
                   onClick={() => setSelectedQuality(option.id)}
-                  className={`${styles.secondaryButton} ${
+                  className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
                     selectedQuality === option.id 
-                      ? "bg-blue-500/20 border-blue-500/40 text-blue-200 shadow-lg shadow-blue-500/10" 
-                      : "hover:bg-blue-400/10 hover:border-blue-400/30 hover:text-blue-100"
-                  } transition-all duration-200 active:bg-blue-600/20`}
+                      ? "border-2 border-blue-500 bg-white/5" 
+                      : "border border-white/20 hover:border-white/40"
+                  }`}
                 >
                   {option.name}
                 </button>
