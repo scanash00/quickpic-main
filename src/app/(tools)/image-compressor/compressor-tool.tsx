@@ -145,9 +145,9 @@ function CompressorTool() {
                   onClick={() => setSelectedQuality(option.id)}
                   className={`${styles.secondaryButton} ${
                     selectedQuality === option.id 
-                      ? "bg-accent/20 border-accent/40 text-white" 
-                      : "hover:bg-accent/10 hover:border-accent/30"
-                  } transition-all duration-200`}
+                      ? "bg-blue-500/20 border-blue-500/40 text-blue-200 shadow-lg shadow-blue-500/10" 
+                      : "hover:bg-blue-400/10 hover:border-blue-400/30 hover:text-blue-100"
+                  } transition-all duration-200 active:bg-blue-600/20`}
                 >
                   {option.name}
                 </button>
@@ -173,10 +173,10 @@ function CompressorTool() {
           </div>
 
           <div className={styles.buttonsContainer}>
-            <button onClick={handleDownload} className={styles.primaryButton}>
+            <button onClick={handleDownload} className={`${styles.primaryButton} bg-blue-500 hover:bg-blue-600 active:bg-blue-700`}>
               Download Compressed
             </button>
-            <button onClick={handleCancel} className={styles.secondaryButton}>
+            <button onClick={handleCancel} className={`${styles.secondaryButton} hover:bg-blue-400/10 hover:border-blue-400/30 hover:text-blue-100`}>
               Try Another
             </button>
           </div>
