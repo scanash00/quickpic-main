@@ -1,110 +1,151 @@
 "use client";
 
-import { styles } from "@/components/ui/styles";
+import { PaletteIcon } from "lucide-react";
+import { useState } from "react";
+import { ToolDescription } from "@/components/shared/tool-description";
 import { UploadBox } from "@/components/shared/upload-box";
-import { ImagePreview } from "@/components/shared/image-preview";
-import { ActionButtons } from "@/components/shared/action-buttons";
-import { OptionSelector } from "@/components/shared/option-selector";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import {
-  type FileUploaderResult,
-  useFileUploader,
-} from "@/hooks/use-file-uploader";
+import { styles } from "@/components/ui/styles";
 
-type Filter = "none" | "grayscale" | "sepia" | "invert" | "blur" | "saturate" | "brightness" | "contrast";
+const filterOptions = [
+  { id: "normal", name: "Normal" },
+  { id: "grayscale", name: "Grayscale" },
+  { id: "sepia", name: "Sepia" },
+  { id: "invert", name: "Invert" },
+  { id: "saturate", name: "Saturate" },
+  { id: "hue-rotate", name: "Hue Rotate" },
+  { id: "brightness", name: "Brightness" },
+  { id: "contrast", name: "Contrast" },
+] as const;
 
-const filterStyles: Record<Filter, React.CSSProperties> = {
-  none: {},
-  grayscale: { filter: "grayscale(100%)" },
-  sepia: { filter: "sepia(100%)" },
-  invert: { filter: "invert(100%)" },
-  blur: { filter: "blur(5px)" },
-  saturate: { filter: "saturate(200%)" },
-  brightness: { filter: "brightness(150%)" },
-  contrast: { filter: "contrast(200%)" },
+type FilterOption = typeof filterOptions[number]["id"];
+
+const filterValues = {
+  normal: "",
+  grayscale: "grayscale(100%)",
+  sepia: "sepia(100%)",
+  invert: "invert(100%)",
+  saturate: "saturate(200%)",
+  "hue-rotate": "hue-rotate(180deg)",
+  brightness: "brightness(150%)",
+  contrast: "contrast(200%)",
 };
 
-const filterOptions: Array<{ label: string; value: Filter }> = [
-  { label: "None", value: "none" },
-  { label: "Grayscale", value: "grayscale" },
-  { label: "Sepia", value: "sepia" },
-  { label: "Invert", value: "invert" },
-  { label: "Blur", value: "blur" },
-  { label: "Saturate", value: "saturate" },
-  { label: "Brightness", value: "brightness" },
-  { label: "Contrast", value: "contrast" },
-];
+export function ColorFilter() {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("normal");
 
-function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [filter, setFilter] = useLocalStorage<Filter>("filter", "none");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
 
-  const handleDownload = async () => {
-    if (!props.fileUploaderProps.file) return;
+  const handleDrop = (files: File[]) => {
+    const file = files[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    setImageFile(file);
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+  };
+
+  const handleDownload = () => {
+    if (!imageUrl || !imageFile) return;
 
     const img = new Image();
-    img.src = props.fileUploaderProps.file.content;
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
 
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      ctx.filter = filterValues[selectedFilter];
+      ctx.drawImage(img, 0, 0);
 
-    ctx.filter = filterStyles[filter].filter ?? "none";
-    ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "_filtered.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
+    };
+  };
 
-    const dataUrl = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    const fileName = props.fileUploaderProps.file.metadata.name;
-    const baseName = fileName.substring(0, fileName.lastIndexOf(".")) ?? fileName;
-    link.download = `${baseName}-${filter}.png`;
-    link.click();
+  const handleCancel = () => {
+    setImageFile(null);
+    setImageUrl(null);
+    setSelectedFilter("normal");
   };
 
   return (
     <div className={styles.container}>
-      {!props.fileUploaderProps.file ? (
+      <ToolDescription
+        title="Image Filter"
+        description="Apply beautiful filters to your images. Choose from a variety of effects like grayscale, sepia, and more."
+        icon={<PaletteIcon className="h-6 w-6" />}
+      />
+
+      {!imageFile ? (
         <UploadBox
-          title="Image Filter"
-          subtitle="Apply filters to your images"
-          description="Choose Image"
+          title="Upload Image"
+          subtitle="Supported formats: PNG, JPG, JPEG"
+          description="Choose image"
           accept="image/*"
-          onChange={props.fileUploaderProps.handleFileUpload}
-          onDrop={props.fileUploaderProps.handleDrop}
+          onChange={handleFileChange}
+          onDrop={handleDrop}
         />
       ) : (
         <div className={styles.toolContainer}>
-          <OptionSelector
-            label="Filter"
-            value={filter}
-            onChange={setFilter}
-            options={filterOptions}
-          />
-          
-          <ImagePreview
-            src={props.fileUploaderProps.file.content}
-            metadata={props.fileUploaderProps.file.metadata}
-            style={filterStyles[filter]}
-          />
+          <div className={styles.imageContainer}>
+            <img
+              src={imageUrl ?? ""}
+              alt="Preview"
+              className={styles.image}
+              style={{ filter: filterValues[selectedFilter] }}
+            />
+          </div>
 
-          <ActionButtons
-            onDownload={handleDownload}
-            onCancel={props.fileUploaderProps.cancel}
-            downloadText={`Download ${filter !== "none" ? filter : ""} Image`}
-          />
+          <div className={styles.optionGrid}>
+            {filterOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setSelectedFilter(option.id)}
+                className={`${styles.optionButton.base} ${
+                  selectedFilter === option.id
+                    ? styles.optionButton.selected
+                    : styles.optionButton.unselected
+                }`}
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.buttonsContainer}>
+            <button onClick={handleDownload} className={styles.primaryButton}>
+              Download
+            </button>
+            <button onClick={handleCancel} className={styles.secondaryButton}>
+              Try Another
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
-}
-
-export function ColorFilter() {
-  const fileUploaderProps = useFileUploader();
-  return <FilterToolCore fileUploaderProps={fileUploaderProps} />;
 }
