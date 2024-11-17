@@ -30,9 +30,9 @@ export function UploadBox({
       <div className={styles.uploadBox.container}>
         <div className={`${styles.uploadBox.inner} group`}>
           <div className={styles.uploadBox.iconContainer}>
-            <UploadCloud className="h-6 w-6 transition-all duration-300 group-hover:scale-110" />
+            <UploadCloud className="h-7 w-7 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110" />
           </div>
-          <div>
+          <div className="space-y-1">
             <h2 className={styles.uploadBox.title}>{title}</h2>
             <p className={styles.uploadBox.subtitle}>{subtitle}</p>
           </div>
