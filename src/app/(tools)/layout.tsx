@@ -43,9 +43,10 @@ export default function ToolsLayout({
           href="https://github.com/scanash00/quickpic-main"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:underline"
+          className="hover:text-gray-400 transition-colors"
+          aria-label="View on GitHub"
         >
-          View on GitHub
+          <i className="fab fa-github text-lg"></i>
         </a>
       </footer>
     </div>
