@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UploadCloud } from "lucide-react";
 import { FileDropzone } from "./file-dropzone";
 import { styles } from "../ui/styles";
@@ -22,6 +22,10 @@ export function UploadBox({
   onChange,
   onDrop,
 }: UploadBoxProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
@@ -42,6 +46,31 @@ export function UploadBox({
     return () => window.removeEventListener("paste", handlePaste);
   }, [onDrop]);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = (y - centerY) / 20;
+    const rotateY = (centerX - x) / 20;
+
+    setRotation({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    setRotation({ x: 0, y: 0 });
+    setIsHovered(false);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
   return (
     <FileDropzone
       acceptedFileTypes={[accept]}
@@ -50,13 +79,20 @@ export function UploadBox({
     >
       <div className={styles.uploadBox.container}>
         <div 
-          className={`${styles.uploadBox.inner} group perspective-1000 transition-transform duration-300 hover:rotate-x-1 hover:rotate-y-2 hover:scale-[1.02] hover:shadow-xl`}
+          ref={cardRef}
+          className={`${styles.uploadBox.inner} group`}
           style={{ 
-            transformStyle: "preserve-3d",
+            transform: isHovered 
+              ? `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`
+              : 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
+            transition: isHovered ? 'transform 0.1s' : 'transform 0.5s',
           }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseEnter={handleMouseEnter}
         >
           <div className={styles.uploadBox.iconContainer}>
-            <UploadCloud className="h-7 w-7 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110" />
+            <UploadCloud className="h-7 w-7" />
           </div>
           <div className="space-y-1">
             <h2 className={styles.uploadBox.title}>{title}</h2>
