@@ -144,8 +144,10 @@ function CompressorTool() {
                   key={option.id}
                   onClick={() => setSelectedQuality(option.id)}
                   className={`${styles.secondaryButton} ${
-                    selectedQuality === option.id ? "bg-accent/20" : ""
-                  }`}
+                    selectedQuality === option.id 
+                      ? "bg-accent/20 border-accent/40 text-white" 
+                      : "hover:bg-accent/10 hover:border-accent/30"
+                  } transition-all duration-200`}
                 >
                   {option.name}
                 </button>
