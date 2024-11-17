@@ -1,26 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { ArrowLeft, Github } from "lucide-react";
 
 function BackButton() {
   return (
     <div className="fixed left-4 top-4 z-50">
       <Link
         href="/"
-        className="flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium text-gray-400 transition-colors duration-200 hover:text-gray-200"
+        className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-gray-400 backdrop-blur-sm transition-all hover:bg-white/20 hover:text-gray-200"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
+        <ArrowLeft className="h-4 w-4" />
         Back
       </Link>
     </div>
@@ -38,15 +28,15 @@ export default function ToolsLayout({
       <main className="flex flex-grow flex-col items-center justify-center">
         {children}
       </main>
-      <footer className="mt-8 text-center text-sm text-gray-500">
+      <footer className="mt-8 text-center">
         <a
           href="https://github.com/scanash00/quickpic-main"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-gray-400 transition-colors"
-          aria-label="View on GitHub"
+          className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm text-gray-400 backdrop-blur-sm transition-all hover:bg-white/20 hover:text-gray-200"
         >
-          <i className="fab fa-github text-lg"></i>
+          <Github className="h-4 w-4" />
+          View on GitHub
         </a>
       </footer>
     </div>
