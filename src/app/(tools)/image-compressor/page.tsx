@@ -1,4 +1,10 @@
-import { CompressorTool } from "./compressor-tool";
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const CompressorTool = dynamic(() => import('./compressor-tool').then(mod => mod.CompressorTool), {
+  ssr: false
+});
 
 export const metadata = {
   title: "Image Compressor - QuickPic",
