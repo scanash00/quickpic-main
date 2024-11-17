@@ -1,109 +1,143 @@
 "use client";
 
-import { styles } from "@/components/ui/styles";
+import { CircleIcon } from "lucide-react";
+import { useState } from "react";
+import { ToolDescription } from "@/components/shared/tool-description";
 import { UploadBox } from "@/components/shared/upload-box";
-import { ImagePreview } from "@/components/shared/image-preview";
-import { ActionButtons } from "@/components/shared/action-buttons";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import {
-  type FileUploaderResult,
-  useFileUploader,
-} from "@/hooks/use-file-uploader";
+import { styles } from "@/components/ui/styles";
 
-function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [radius, setRadius] = useLocalStorage("radius", 16);
+export function RoundedBorder() {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [borderRadius, setBorderRadius] = useState(20);
 
-  const handleDownload = async () => {
-    if (!props.fileUploaderProps.file) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleDrop = (files: File[]) => {
+    const file = files[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    setImageFile(file);
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+  };
+
+  const handleDownload = () => {
+    if (!imageUrl || !imageFile) return;
 
     const img = new Image();
-    img.src = props.fileUploaderProps.file.content;
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
 
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      // Create a rounded rectangle path
+      ctx.beginPath();
+      ctx.moveTo(borderRadius, 0);
+      ctx.lineTo(canvas.width - borderRadius, 0);
+      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, borderRadius);
+      ctx.lineTo(canvas.width, canvas.height - borderRadius);
+      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - borderRadius, canvas.height);
+      ctx.lineTo(borderRadius, canvas.height);
+      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - borderRadius);
+      ctx.lineTo(0, borderRadius);
+      ctx.quadraticCurveTo(0, 0, borderRadius, 0);
+      ctx.closePath();
 
-    // Create a rounded rectangle path
-    ctx.beginPath();
-    ctx.moveTo(radius, 0);
-    ctx.lineTo(canvas.width - radius, 0);
-    ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
-    ctx.lineTo(canvas.width, canvas.height - radius);
-    ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height);
-    ctx.lineTo(radius, canvas.height);
-    ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-    ctx.lineTo(0, radius);
-    ctx.quadraticCurveTo(0, 0, radius, 0);
-    ctx.closePath();
+      // Clip to the rounded rectangle
+      ctx.clip();
 
-    // Clip to the rounded rectangle
-    ctx.clip();
+      // Draw the image
+      ctx.drawImage(img, 0, 0);
 
-    // Draw the image
-    ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "_rounded.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
+    };
+  };
 
-    const dataUrl = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    const fileName = props.fileUploaderProps.file.metadata.name;
-    const baseName = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
-    link.download = `${baseName}-rounded.png`;
-    link.click();
+  const handleCancel = () => {
+    setImageFile(null);
+    setImageUrl(null);
+    setBorderRadius(20);
   };
 
   return (
     <div className={styles.container}>
-      {!props.fileUploaderProps.file ? (
+      <ToolDescription
+        title="Rounded Border"
+        description="Add smooth rounded corners to your images. Perfect for profile pictures and thumbnails."
+        icon={<CircleIcon className="h-6 w-6" />}
+      />
+
+      {!imageFile ? (
         <UploadBox
-          title="Rounded Border"
-          subtitle="Add rounded corners to your images"
-          description="Choose Image"
+          title="Upload Image"
+          subtitle="Supported formats: PNG, JPG, JPEG"
+          description="Choose image"
           accept="image/*"
-          onChange={props.fileUploaderProps.handleFileUpload}
-          onDrop={props.fileUploaderProps.handleDrop}
+          onChange={handleFileChange}
+          onDrop={handleDrop}
         />
       ) : (
         <div className={styles.toolContainer}>
+          <div className={styles.imageContainer}>
+            <img
+              src={imageUrl ?? ""}
+              alt="Preview"
+              className={styles.image}
+              style={{ borderRadius: `${borderRadius}px` }}
+            />
+          </div>
+
           <div className={styles.controlsContainer}>
-            <label className={styles.label}>
+            <label htmlFor="radius" className={styles.label}>
               Border Radius
             </label>
             <input
+              id="radius"
               type="range"
               min="0"
               max="100"
-              value={radius}
-              onChange={(e) => setRadius(parseInt(e.target.value))}
+              value={borderRadius}
+              onChange={(e) => setBorderRadius(Number(e.target.value))}
               className={styles.slider}
             />
-            <div className={styles.sliderValue}>{radius}px</div>
+            <div className={styles.sliderValue}>{borderRadius}px</div>
           </div>
 
-          <ImagePreview
-            src={props.fileUploaderProps.file.content}
-            metadata={props.fileUploaderProps.file.metadata}
-            style={{ borderRadius: `${radius}px` }}
-          />
-
-          <ActionButtons
-            onDownload={handleDownload}
-            onCancel={props.fileUploaderProps.cancel}
-            downloadText="Download Rounded Image"
-          />
+          <div className={styles.buttonsContainer}>
+            <button onClick={handleDownload} className={styles.primaryButton}>
+              Download
+            </button>
+            <button onClick={handleCancel} className={styles.secondaryButton}>
+              Try Another
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
-}
-
-export function RoundedBorder() {
-  const fileUploaderProps = useFileUploader();
-  return <RoundedToolCore fileUploaderProps={fileUploaderProps} />;
 }

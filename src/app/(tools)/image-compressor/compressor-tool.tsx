@@ -1,111 +1,188 @@
 "use client";
 
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { CompressIcon } from "lucide-react";
+import { useState } from "react";
+import { ToolDescription } from "@/components/shared/tool-description";
 import { UploadBox } from "@/components/shared/upload-box";
-import { OptionSelector } from "@/components/shared/option-selector";
-import {
-  type FileUploaderResult,
-  useFileUploader,
-} from "@/hooks/use-file-uploader";
-import { Download } from "lucide-react";
-
-type Quality = 0.1 | 0.3 | 0.5 | 0.7 | 0.9;
+import { styles } from "@/components/ui/styles";
 
 const qualityOptions = [
-  { label: "10%", value: 0.1 as Quality },
-  { label: "30%", value: 0.3 as Quality },
-  { label: "50%", value: 0.5 as Quality },
-  { label: "70%", value: 0.7 as Quality },
-  { label: "90%", value: 0.9 as Quality },
-];
+  { id: "high", name: "High", value: 0.8 },
+  { id: "medium", name: "Medium", value: 0.6 },
+  { id: "low", name: "Low", value: 0.4 },
+  { id: "custom", name: "Custom", value: null },
+] as const;
 
-function CompressorToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [quality, setQuality] = useLocalStorage<Quality>("quality", 0.7);
+type QualityOption = typeof qualityOptions[number]["id"];
 
-  const handleDownload = async () => {
-    if (!props.fileUploaderProps.file) return;
+export function ImageCompressor() {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [selectedQuality, setSelectedQuality] = useState<QualityOption>("high");
+  const [customQuality, setCustomQuality] = useState(80);
+  const [originalSize, setOriginalSize] = useState<number>(0);
+  const [compressedSize, setCompressedSize] = useState<number>(0);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleDrop = (files: File[]) => {
+    const file = files[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    setImageFile(file);
+    setOriginalSize(file.size);
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const getQualityValue = () => {
+    if (selectedQuality === "custom") {
+      return customQuality / 100;
+    }
+    return qualityOptions.find(q => q.id === selectedQuality)?.value ?? 0.8;
+  };
+
+  const handleDownload = () => {
+    if (!imageUrl || !imageFile) return;
 
     const img = new Image();
-    img.src = props.fileUploaderProps.file.content;
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
 
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      ctx.drawImage(img, 0, 0);
 
-    ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            setCompressedSize(blob.size);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "_compressed.jpg";
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+        },
+        "image/jpeg",
+        getQualityValue()
+      );
+    };
+  };
 
-    const dataUrl = canvas.toDataURL("image/jpeg", quality);
-
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = `${props.fileUploaderProps.file.metadata.name}-compressed.jpg`;
-    link.click();
+  const handleCancel = () => {
+    setImageFile(null);
+    setImageUrl(null);
+    setSelectedQuality("high");
+    setCustomQuality(80);
+    setOriginalSize(0);
+    setCompressedSize(0);
   };
 
   return (
-    <div className="flex flex-col items-center gap-8 p-6">
-      {!props.fileUploaderProps.file ? (
+    <div className={styles.container}>
+      <ToolDescription
+        title="Image Compressor"
+        description="Compress your images while maintaining quality. Perfect for reducing file size for web use."
+        icon={<CompressIcon className="h-6 w-6" />}
+      />
+
+      {!imageFile ? (
         <UploadBox
-          title="Image Compressor"
-          subtitle="Compress your images to reduce file size"
-          description="Choose Image"
+          title="Upload Image"
+          subtitle="Supported formats: PNG, JPG, JPEG"
+          description="Choose image"
           accept="image/*"
-          onChange={props.fileUploaderProps.handleFileUpload}
-          onDrop={props.fileUploaderProps.handleDrop}
+          onChange={handleFileChange}
+          onDrop={handleDrop}
         />
       ) : (
-        <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
-          <OptionSelector
-            label="Quality"
-            value={quality}
-            onChange={setQuality}
-            options={qualityOptions}
-          />
-          
-          <div className="relative w-full rounded-lg border border-gray-200 bg-white p-4">
+        <div className={styles.toolContainer}>
+          <div className={styles.imageContainer}>
             <img
-              src={props.fileUploaderProps.file.content}
+              src={imageUrl ?? ""}
               alt="Preview"
-              className="mx-auto max-h-[500px] w-full object-contain"
+              className={styles.image}
             />
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 flex gap-2">
               <div className="rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
-                {props.fileUploaderProps.file.metadata.width} x {props.fileUploaderProps.file.metadata.height}
+                Original: {formatSize(originalSize)}
               </div>
+              {compressedSize > 0 && (
+                <div className="rounded-md bg-green-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
+                  Compressed: {formatSize(compressedSize)}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800"
-              onClick={handleDownload}
-            >
-              <Download className="h-5 w-5" />
-              <span>Download Compressed</span>
+          <div className={styles.optionGrid}>
+            {qualityOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setSelectedQuality(option.id)}
+                className={`${styles.optionButton.base} ${
+                  selectedQuality === option.id
+                    ? styles.optionButton.selected
+                    : styles.optionButton.unselected
+                }`}
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+
+          {selectedQuality === "custom" && (
+            <div className={styles.controlsContainer}>
+              <label htmlFor="quality" className={styles.label}>
+                Quality: {customQuality}%
+              </label>
+              <input
+                id="quality"
+                type="range"
+                min="1"
+                max="100"
+                value={customQuality}
+                onChange={(e) => setCustomQuality(Number(e.target.value))}
+                className={styles.slider}
+              />
+            </div>
+          )}
+
+          <div className={styles.buttonsContainer}>
+            <button onClick={handleDownload} className={styles.primaryButton}>
+              Download Compressed
             </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-200 active:bg-gray-300"
-              onClick={props.fileUploaderProps.cancel}
-            >
-              Choose Another Image
+            <button onClick={handleCancel} className={styles.secondaryButton}>
+              Try Another
             </button>
           </div>
         </div>
       )}
     </div>
   );
-}
-
-export function CompressorTool() {
-  const fileUploaderProps = useFileUploader();
-  return <CompressorToolCore fileUploaderProps={fileUploaderProps} />;
 }
