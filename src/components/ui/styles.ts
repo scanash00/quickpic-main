@@ -1,54 +1,49 @@
 export const styles = {
   // Layout
   container: "flex flex-col items-center gap-8 p-6",
-  toolContainer: "w-full max-w-2xl mx-auto space-y-6 animate-fade-in",
+  toolContainer: "flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-background/50 backdrop-blur-sm rounded-lg shadow-lg border border-accent/10",
   toolDescription: "mb-8 text-center",
 
   // Image container
-  imageContainer:
-    "relative w-full rounded-xl border-2 border-white/20 bg-white/10 p-4 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-lg hover:shadow-blue-500/10",
+  imageContainer: "relative w-full aspect-video flex items-center justify-center bg-background/30 rounded-lg overflow-hidden border border-accent/10",
   imageDimensions:
     "absolute top-2 right-2 rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur",
-  image: "mx-auto max-h-[500px] w-full object-contain rounded-lg",
+  image: "max-w-full max-h-full object-contain",
 
   // Upload box
   uploadBox: {
     container: "w-full max-w-2xl mx-auto",
     inner:
-      "flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-white/30 bg-white/10 p-12 text-center backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:shadow-lg hover:shadow-blue-500/10",
+      "relative flex flex-col items-center gap-6 rounded-xl border-2 border-dashed border-white/20 bg-gradient-to-b from-white/[0.08] to-white/[0.04] p-8 text-center backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-lg hover:from-white/[0.12] hover:to-white/[0.06]",
     iconContainer:
-      "flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/60 transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20",
-    title: "text-xl font-semibold text-white",
-    subtitle: "mt-1 text-sm text-white/60",
-    buttonContainer: "flex items-center gap-2",
+      "flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-b from-white/[0.12] to-white/[0.08] text-white/70 transition-all duration-300 group-hover:scale-110 group-hover:from-white/[0.16] group-hover:to-white/[0.12] group-hover:text-white/90",
+    title: "text-xl font-semibold text-white/90 tracking-tight",
+    subtitle: "mt-1 text-sm text-white/60 tracking-wide",
+    buttonContainer: "flex flex-col items-center gap-3 mt-2",
     uploadButton:
-      "inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800",
-    dragText: "text-sm text-white/60",
+      "px-5 py-2 text-sm font-medium text-white/90 bg-gradient-to-b from-white/[0.12] to-white/[0.08] rounded-lg border border-white/20 transition-all duration-300 hover:from-white/[0.16] hover:to-white/[0.12] hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:text-white active:scale-[0.98]",
+    dragText: "text-sm font-medium text-white/70 tracking-wide",
   },
 
   // Controls
-  controlsContainer: "flex flex-col gap-2",
-  label: "block text-sm font-medium text-white/60",
-  slider: "w-full accent-blue-600",
+  controlsContainer: "flex flex-col gap-4 w-full",
+  label: "block text-sm font-medium text-foreground/80 mb-1",
+  slider: "w-full h-2 bg-accent/10 rounded-lg appearance-none cursor-pointer accent-primary",
   sliderValue: "text-sm text-white/60 text-center",
 
   // Buttons container
-  buttonsContainer: "flex gap-4 justify-center",
+  buttonsContainer: "flex flex-wrap gap-4 justify-center",
 
   // Buttons
-  primaryButton:
-    "inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all duration-300 hover:bg-blue-700 active:bg-blue-800 hover:shadow-lg hover:shadow-blue-500/20",
-  secondaryButton:
-    "inline-flex items-center gap-2 rounded-lg bg-white/10 px-6 py-2.5 font-medium text-white/80 transition-all duration-300 hover:bg-white/20 active:bg-white/30 hover:shadow-lg hover:shadow-white/5",
+  primaryButton: "px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
+  secondaryButton: "px-6 py-2 bg-accent/10 text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-accent/20 hover:scale-[1.02] active:scale-[0.98]",
 
   // Option selector
-  optionGrid: "grid grid-cols-2 sm:grid-cols-4 gap-3",
+  optionGrid: "grid grid-cols-2 sm:grid-cols-4 gap-2",
   optionButton: {
-    base: "relative flex items-center justify-center p-3 rounded-lg border-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
-    selected:
-      "border-blue-500 bg-blue-500/20 text-blue-300 shadow-lg shadow-blue-500/20",
-    unselected:
-      "border-white/20 bg-white/10 text-white/80 hover:border-white/30 hover:bg-white/20 hover:shadow-lg hover:shadow-white/5",
+    base: "w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
+    selected: "bg-primary text-primary-foreground shadow-lg",
+    unselected: "bg-accent/10 hover:bg-accent/20 text-foreground",
   },
 
   // Animations
