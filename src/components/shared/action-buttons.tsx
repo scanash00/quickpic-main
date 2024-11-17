@@ -5,20 +5,20 @@ import { styles } from "../ui/styles";
 
 interface ActionButtonsProps {
   onDownload: () => void;
-  onCancel: () => void;
+  onReset: () => void;
   downloadText: string;
 }
 
 export function ActionButtons({
   onDownload,
-  onCancel,
+  onReset,
   downloadText,
 }: ActionButtonsProps) {
   return (
     <div className={styles.buttonsContainer}>
       <button
         type="button"
-        className={`${styles.primaryButton} ${styles.glowHover}`}
+        className={styles.primaryButton}
         onClick={onDownload}
       >
         <Download className="h-5 w-5" />
@@ -27,7 +27,7 @@ export function ActionButtons({
       <button
         type="button"
         className={styles.secondaryButton}
-        onClick={onCancel}
+        onClick={onReset}
       >
         Choose Another Image
       </button>

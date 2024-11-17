@@ -28,7 +28,7 @@ export function UploadBox({
       if (!items) return;
 
       for (const item of items) {
-        if (item.type.indexOf("image") !== -1) {
+        if (item.type.includes("image")) {
           const file = item.getAsFile();
           if (file) {
             onDrop([file]);
@@ -58,7 +58,9 @@ export function UploadBox({
             <p className={styles.uploadBox.subtitle}>{subtitle}</p>
           </div>
           <div className={styles.uploadBox.buttonContainer}>
-            <span className={styles.uploadBox.dragText}>Drag and drop, paste, or</span>
+            <span className={styles.uploadBox.dragText}>
+              Drag and drop, paste, or
+            </span>
             <button
               type="button"
               className={styles.uploadBox.uploadButton}
@@ -69,7 +71,7 @@ export function UploadBox({
           </div>
           <input
             type="file"
-            className={styles.hidden}
+            className="hidden"
             accept={accept}
             onChange={onChange}
           />

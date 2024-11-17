@@ -121,20 +121,20 @@ export function ColorFilter() {
             />
           </div>
 
-          <div className={styles.optionGrid}>
-            {filterOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedFilter(option.id)}
-                className={`${styles.optionButton.base} ${
-                  selectedFilter === option.id
-                    ? styles.optionButton.selected
-                    : styles.optionButton.unselected
-                }`}
-              >
-                {option.name}
-              </button>
-            ))}
+          <div className={styles.optionsContainer}>
+            <div className={styles.optionsGrid}>
+              {filterOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedFilter(option.id)}
+                  className={`${styles.secondaryButton} ${
+                    selectedFilter === option.id ? "bg-accent/20" : ""
+                  }`}
+                >
+                  {option.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={styles.buttonsContainer}>

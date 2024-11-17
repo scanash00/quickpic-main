@@ -1,46 +1,25 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-import PlausibleProvider from "next-plausible";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "QuickPic",
-  description: "Quick and easy image tools",
-  metadataBase: new URL("http://localhost:3001"),
-  icons: {
-    icon: "/favicon.svg",
-  },
+  title: "QuickPic - Image Tools",
+  description: "Free, fast, and easy to use image tools",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-        />
-        <PlausibleProvider domain="quickpic.t3.gg" />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} dark antialiased`}
-      >
-        {children}
+      <body className={`${inter.className} min-h-screen antialiased`}>
+        <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8">
+          {children}
+        </main>
       </body>
     </html>
   );

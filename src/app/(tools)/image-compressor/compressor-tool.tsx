@@ -137,38 +137,38 @@ function CompressorTool() {
             </div>
           </div>
 
-          <div className={styles.optionGrid}>
-            {qualityOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedQuality(option.id)}
-                className={`${styles.optionButton.base} ${
-                  selectedQuality === option.id
-                    ? styles.optionButton.selected
-                    : styles.optionButton.unselected
-                }`}
-              >
-                {option.name}
-              </button>
-            ))}
-          </div>
-
-          {selectedQuality === "custom" && (
-            <div className={styles.controlsContainer}>
-              <label htmlFor="quality" className={styles.label}>
-                Quality: {customQuality}%
-              </label>
-              <input
-                id="quality"
-                type="range"
-                min="1"
-                max="100"
-                value={customQuality}
-                onChange={(e) => setCustomQuality(Number(e.target.value))}
-                className={styles.slider}
-              />
+          <div className={styles.optionsContainer}>
+            <div className={styles.optionsGrid}>
+              {qualityOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedQuality(option.id)}
+                  className={`${styles.secondaryButton} ${
+                    selectedQuality === option.id ? "bg-accent/20" : ""
+                  }`}
+                >
+                  {option.name}
+                </button>
+              ))}
             </div>
-          )}
+            {selectedQuality === "custom" && (
+              <div className={styles.controlsContainer}>
+                <label htmlFor="quality" className={styles.formLabel}>
+                  Quality: {customQuality}%
+                </label>
+                <input
+                  id="quality"
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={customQuality}
+                  onChange={(e) => setCustomQuality(Number(e.target.value))}
+                  className={styles.optionsSlider}
+                />
+                <div className={styles.sliderValue}>{customQuality}%</div>
+              </div>
+            )}
+          </div>
 
           <div className={styles.buttonsContainer}>
             <button onClick={handleDownload} className={styles.primaryButton}>

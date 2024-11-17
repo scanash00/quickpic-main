@@ -141,20 +141,20 @@ export function SquareImage() {
             </div>
           </div>
 
-          <div className={styles.optionGrid}>
-            {bgOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedBg(option.id)}
-                className={`${styles.optionButton.base} ${
-                  selectedBg === option.id
-                    ? styles.optionButton.selected
-                    : styles.optionButton.unselected
-                }`}
-              >
-                {option.name}
-              </button>
-            ))}
+          <div className={styles.optionsContainer}>
+            <div className={styles.optionsGrid}>
+              {bgOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedBg(option.id)}
+                  className={`${styles.secondaryButton} ${
+                    selectedBg === option.id ? "bg-accent/20" : ""
+                  }`}
+                >
+                  {option.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={styles.buttonsContainer}>

@@ -102,20 +102,20 @@ export function ConverterTool() {
             <img src={imageUrl ?? ""} alt="Preview" className={styles.image} />
           </div>
 
-          <div className={styles.optionGrid}>
-            {formatOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedFormat(option.id)}
-                className={`${styles.optionButton.base} ${
-                  selectedFormat === option.id
-                    ? styles.optionButton.selected
-                    : styles.optionButton.unselected
-                }`}
-              >
-                {option.name}
-              </button>
-            ))}
+          <div className={styles.optionsContainer}>
+            <div className={styles.optionsGrid}>
+              {formatOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedFormat(option.id)}
+                  className={`${styles.secondaryButton} ${
+                    selectedFormat === option.id ? "bg-accent/20" : ""
+                  }`}
+                >
+                  {option.name.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={styles.buttonsContainer}>
