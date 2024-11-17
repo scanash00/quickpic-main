@@ -19,7 +19,7 @@ https://github.com/t3dotgg/quickpic
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/scanash00/quickpic-main
 cd quickpic-main
 ```
 
