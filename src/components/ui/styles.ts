@@ -14,14 +14,14 @@ export const styles = {
   uploadBox: {
     container: "w-full max-w-2xl mx-auto",
     inner:
-      "relative flex flex-col items-center gap-6 rounded-xl border-2 border-dashed border-white/20 bg-white/[0.03] p-8 text-center backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/[0.05] hover:shadow-lg",
+      "relative flex flex-col items-center gap-6 rounded-xl border-2 border-dashed border-white/20 bg-white/[0.03] p-8 text-center transition-transform duration-300 hover:scale-[1.02] hover:border-white/30",
     iconContainer:
-      "flex items-center justify-center w-14 h-14 rounded-full bg-white/[0.08] text-white/70 transition-all duration-300 group-hover:text-white/90",
+      "flex items-center justify-center w-14 h-14 rounded-full bg-white/[0.08] text-white/70",
     title: "text-xl font-semibold text-white/90 tracking-tight",
     subtitle: "mt-1 text-sm text-white/60 tracking-wide",
     buttonContainer: "flex flex-col items-center gap-3 mt-2",
     uploadButton:
-      "px-5 py-2 text-sm font-medium text-white/90 bg-white/[0.08] rounded-lg border border-white/20 transition-all duration-300 hover:bg-white/[0.12] hover:border-white/30 hover:shadow-lg hover:text-white active:scale-[0.98]",
+      "px-5 py-2 text-sm font-medium text-white/90 bg-white/[0.08] rounded-lg border border-white/20 transition-all duration-300 hover:bg-white/[0.12] hover:border-white/30",
     dragText: "text-sm font-medium text-white/70 tracking-wide",
   },
 
