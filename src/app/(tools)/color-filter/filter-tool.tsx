@@ -17,7 +17,7 @@ const filterOptions = [
   { id: "contrast", name: "Contrast" },
 ] as const;
 
-type FilterOption = typeof filterOptions[number]["id"];
+type FilterOption = (typeof filterOptions)[number]["id"];
 
 const filterValues = {
   normal: "",
@@ -78,7 +78,8 @@ export function ColorFilter() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "_filtered.png";
+          a.download =
+            imageFile.name.replace(/\.[^/.]+$/, "") + "_filtered.png";
           a.click();
           URL.revokeObjectURL(url);
         }

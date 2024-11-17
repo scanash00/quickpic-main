@@ -10,15 +10,15 @@ interface ImagePreviewProps {
   style?: React.CSSProperties;
 }
 
-export function ImagePreview({ src, alt = "Preview", metadata, style }: ImagePreviewProps) {
+export function ImagePreview({
+  src,
+  alt = "Preview",
+  metadata,
+  style,
+}: ImagePreviewProps) {
   return (
     <div className={styles.imageContainer}>
-      <img
-        src={src}
-        alt={alt}
-        className={styles.image}
-        style={style}
-      />
+      <img src={src} alt={alt} className={styles.image} style={style} />
       <div className={styles.imageDimensions}>
         {metadata.width} x {metadata.height}
       </div>

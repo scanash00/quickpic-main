@@ -40,7 +40,7 @@ export function UploadBox({
             <button
               type="button"
               className={`${styles.uploadBox.uploadButton} ${styles.glowHover}`}
-              onClick={() => document.querySelector('input')?.click()}
+              onClick={() => document.querySelector("input")?.click()}
             >
               {description}
             </button>

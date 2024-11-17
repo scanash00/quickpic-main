@@ -13,7 +13,7 @@ const bgOptions = [
   { id: "blur", name: "Blur", color: "blur" },
 ] as const;
 
-type BgOption = typeof bgOptions[number]["id"];
+type BgOption = (typeof bgOptions)[number]["id"];
 
 export function SquareImage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -63,7 +63,8 @@ export function SquareImage() {
         ctx.drawImage(img, 0, 0, size, size);
         ctx.filter = "none";
       } else if (selectedBg !== "transparent") {
-        ctx.fillStyle = bgOptions.find(bg => bg.id === selectedBg)?.color ?? "#ffffff";
+        ctx.fillStyle =
+          bgOptions.find((bg) => bg.id === selectedBg)?.color ?? "#ffffff";
         ctx.fillRect(0, 0, size, size);
       }
 
@@ -114,18 +115,28 @@ export function SquareImage() {
         <div className={styles.toolContainer}>
           <div className={styles.imageContainer}>
             {selectedBg === "blur" && imageUrl && (
-              <div 
-                className="absolute inset-0 bg-cover bg-center blur-xl opacity-50"
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-50 blur-xl"
                 style={{ backgroundImage: `url(${imageUrl})` }}
               />
             )}
-            <div className={`relative w-full aspect-square flex items-center justify-center ${
-              selectedBg === "transparent" ? "bg-[url('/checkered-pattern.png')] bg-repeat" : ""
-            }`} style={{ backgroundColor: selectedBg !== "transparent" && selectedBg !== "blur" ? bgOptions.find(bg => bg.id === selectedBg)?.color : undefined }}>
+            <div
+              className={`relative flex aspect-square w-full items-center justify-center ${
+                selectedBg === "transparent"
+                  ? "bg-[url('/checkered-pattern.png')] bg-repeat"
+                  : ""
+              }`}
+              style={{
+                backgroundColor:
+                  selectedBg !== "transparent" && selectedBg !== "blur"
+                    ? bgOptions.find((bg) => bg.id === selectedBg)?.color
+                    : undefined,
+              }}
+            >
               <img
                 src={imageUrl ?? ""}
                 alt="Preview"
-                className="max-w-full max-h-full object-contain"
+                className="max-h-full max-w-full object-contain"
               />
             </div>
           </div>

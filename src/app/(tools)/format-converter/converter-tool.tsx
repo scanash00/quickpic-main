@@ -12,7 +12,7 @@ const formatOptions = [
   { id: "webp", name: "WebP", mime: "image/webp" },
 ] as const;
 
-type FormatOption = typeof formatOptions[number]["id"];
+type FormatOption = (typeof formatOptions)[number]["id"];
 
 export function ConverterTool() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -56,7 +56,7 @@ export function ConverterTool() {
 
       ctx.drawImage(img, 0, 0);
 
-      const format = formatOptions.find(f => f.id === selectedFormat);
+      const format = formatOptions.find((f) => f.id === selectedFormat);
       if (!format) return;
 
       canvas.toBlob((blob) => {
@@ -64,7 +64,8 @@ export function ConverterTool() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "." + format.id;
+          a.download =
+            imageFile.name.replace(/\.[^/.]+$/, "") + "." + format.id;
           a.click();
           URL.revokeObjectURL(url);
         }
@@ -98,11 +99,7 @@ export function ConverterTool() {
       ) : (
         <div className={styles.toolContainer}>
           <div className={styles.imageContainer}>
-            <img
-              src={imageUrl ?? ""}
-              alt="Preview"
-              className={styles.image}
-            />
+            <img src={imageUrl ?? ""} alt="Preview" className={styles.image} />
           </div>
 
           <div className={styles.optionGrid}>

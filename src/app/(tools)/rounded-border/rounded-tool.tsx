@@ -52,7 +52,12 @@ export function RoundedBorder() {
       ctx.lineTo(canvas.width - borderRadius, 0);
       ctx.quadraticCurveTo(canvas.width, 0, canvas.width, borderRadius);
       ctx.lineTo(canvas.width, canvas.height - borderRadius);
-      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - borderRadius, canvas.height);
+      ctx.quadraticCurveTo(
+        canvas.width,
+        canvas.height,
+        canvas.width - borderRadius,
+        canvas.height,
+      );
       ctx.lineTo(borderRadius, canvas.height);
       ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - borderRadius);
       ctx.lineTo(0, borderRadius);

@@ -22,7 +22,9 @@ export interface FileUploaderResult {
   cancel: () => void;
 }
 
-function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -108,28 +110,34 @@ export function useFileUploader(): FileUploaderResult {
     }
   }, []);
 
-  const handleFileUpload = useCallback(async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const files = event.target.files;
-    if (!files || files.length === 0) {
-      throw new Error("No file selected");
-    }
-    const selectedFile = files[0];
-    if (!selectedFile) {
-      throw new Error("No file selected");
-    }
-    await processFile(selectedFile);
-  }, [processFile]);
+  const handleFileUpload = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
+        throw new Error("No file selected");
+      }
+      const selectedFile = files[0];
+      if (!selectedFile) {
+        throw new Error("No file selected");
+      }
+      await processFile(selectedFile);
+    },
+    [processFile],
+  );
 
-  const handleDrop = useCallback(async (files: File[]): Promise<void> => {
-    if (files.length === 0) {
-      throw new Error("No file dropped");
-    }
-    const selectedFile = files[0];
-    if (!selectedFile) {
-      throw new Error("No file dropped");
-    }
-    await processFile(selectedFile);
-  }, [processFile]);
+  const handleDrop = useCallback(
+    async (files: File[]): Promise<void> => {
+      if (files.length === 0) {
+        throw new Error("No file dropped");
+      }
+      const selectedFile = files[0];
+      if (!selectedFile) {
+        throw new Error("No file dropped");
+      }
+      await processFile(selectedFile);
+    },
+    [processFile],
+  );
 
   const cancel = useCallback(() => {
     setFile(null);

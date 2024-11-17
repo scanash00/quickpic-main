@@ -1,6 +1,6 @@
 "use client";
 
-import { CompressIcon } from "lucide-react";
+import { Minimize2 } from "lucide-react";
 import { useState } from "react";
 import { ToolDescription } from "@/components/shared/tool-description";
 import { UploadBox } from "@/components/shared/upload-box";
@@ -13,7 +13,7 @@ const qualityOptions = [
   { id: "custom", name: "Custom", value: null },
 ] as const;
 
-type QualityOption = typeof qualityOptions[number]["id"];
+type QualityOption = (typeof qualityOptions)[number]["id"];
 
 function CompressorTool() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -56,7 +56,7 @@ function CompressorTool() {
     if (selectedQuality === "custom") {
       return customQuality / 100;
     }
-    return qualityOptions.find(q => q.id === selectedQuality)?.value ?? 0.8;
+    return qualityOptions.find((q) => q.id === selectedQuality)?.value ?? 0.8;
   };
 
   const handleDownload = () => {
@@ -83,13 +83,14 @@ function CompressorTool() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = imageFile.name.replace(/\.[^/.]+$/, "") + "_compressed.jpg";
+            a.download =
+              imageFile.name.replace(/\.[^/.]+$/, "") + "_compressed.jpg";
             a.click();
             URL.revokeObjectURL(url);
           }
         },
         "image/jpeg",
-        getQualityValue()
+        getQualityValue(),
       );
     };
   };
@@ -108,7 +109,7 @@ function CompressorTool() {
       <ToolDescription
         title="Image Compressor"
         description="Compress your images while maintaining quality. Perfect for reducing file size for web use."
-        icon={<CompressIcon className="h-6 w-6" />}
+        icon={<Minimize2 className="h-6 w-6" />}
       />
 
       {!imageFile ? (
@@ -123,12 +124,8 @@ function CompressorTool() {
       ) : (
         <div className={styles.toolContainer}>
           <div className={styles.imageContainer}>
-            <img
-              src={imageUrl ?? ""}
-              alt="Preview"
-              className={styles.image}
-            />
-            <div className="absolute top-2 right-2 flex gap-2">
+            <img src={imageUrl ?? ""} alt="Preview" className={styles.image} />
+            <div className="absolute right-2 top-2 flex gap-2">
               <div className="rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
                 Original: {formatSize(originalSize)}
               </div>

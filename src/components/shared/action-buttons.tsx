@@ -9,7 +9,11 @@ interface ActionButtonsProps {
   downloadText: string;
 }
 
-export function ActionButtons({ onDownload, onCancel, downloadText }: ActionButtonsProps) {
+export function ActionButtons({
+  onDownload,
+  onCancel,
+  downloadText,
+}: ActionButtonsProps) {
   return (
     <div className={styles.buttonsContainer}>
       <button
