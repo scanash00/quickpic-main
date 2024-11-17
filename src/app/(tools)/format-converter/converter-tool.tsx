@@ -129,28 +129,38 @@ function ConverterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-col items-center gap-4">
-        <OptionSelector
-          label="Output Format"
-          value={format}
-          onChange={setFormat}
-          options={formatOptions}
+      {!props.fileUploaderProps.file ? (
+        <UploadBox
+          title="Format Converter"
+          subtitle="Convert images between formats"
+          description="Choose Image"
+          accept="image/*"
+          onChange={props.fileUploaderProps.handleFileUpload}
+          onDrop={props.fileUploaderProps.handleDrop}
         />
-      </div>
-
-      {props.fileUploaderProps.file ? (
-        <div className="flex flex-col items-center gap-4">
-          <ImageRenderer imageContent={props.fileUploaderProps.file.content} />
-          <SaveImageButton
-            imageContent={props.fileUploaderProps.file.content}
-            format={format}
-            imageMetadata={props.fileUploaderProps.file.metadata}
-          />
-        </div>
       ) : (
-        <FileDropzone onDrop={props.fileUploaderProps.handleDrop}>
-          <UploadBox />
-        </FileDropzone>
+        <div className="flex flex-col items-center gap-4">
+          <OptionSelector
+            label="Format"
+            value={format}
+            onChange={setFormat}
+            options={formatOptions}
+          />
+          <ImageRenderer imageContent={props.fileUploaderProps.file.content} />
+          <div className="flex gap-4">
+            <SaveImageButton
+              imageContent={props.fileUploaderProps.file.content}
+              format={format}
+              imageMetadata={props.fileUploaderProps.file.metadata}
+            />
+            <button
+              onClick={props.fileUploaderProps.cancel}
+              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            >
+              Choose Another Image
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

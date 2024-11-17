@@ -152,89 +152,61 @@ function SaveAsPngButton({
 }
 
 function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const { imageContent, imageMetadata, handleFileUploadEvent, cancel } =
-    props.fileUploaderProps;
-  const [radius, setRadius] = useLocalStorage<Radius>("roundedTool_radius", 2);
-  const [isCustomRadius, setIsCustomRadius] = useState(false);
+  const [radius, setRadius] = useLocalStorage<number>("radius", 16);
   const [background, setBackground] = useLocalStorage<BackgroundOption>(
-    "roundedTool_background",
-    "transparent",
+    "background",
+    "transparent"
   );
 
-  const handleRadiusChange = (value: number | "custom") => {
-    if (value === "custom") {
-      setIsCustomRadius(true);
-    } else {
-      setRadius(value);
-      setIsCustomRadius(false);
-    }
-  };
-
-  if (!imageMetadata) {
-    return (
-      <UploadBox
-        title="Add rounded borders to your images. Quick and easy."
-        subtitle="Allows pasting images from clipboard"
-        description="Upload Image"
-        accept="image/*"
-        onChange={handleFileUploadEvent}
-      />
-    );
-  }
+  const backgroundOptions = [
+    { label: "Transparent", value: "transparent" as const },
+    { label: "White", value: "white" as const },
+    { label: "Black", value: "black" as const },
+  ];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl p-6">
-        <ImageRenderer
-          imageContent={imageContent}
-          radius={radius}
-          background={background}
+    <div className="flex flex-col items-center gap-8">
+      {!props.fileUploaderProps.file ? (
+        <UploadBox
+          title="Corner Rounder"
+          subtitle="Round the corners of your images"
+          description="Choose Image"
+          accept="image/*"
+          onChange={props.fileUploaderProps.handleFileUpload}
+          onDrop={props.fileUploaderProps.handleDrop}
         />
-        <p className="text-lg font-medium text-white/80">
-          {imageMetadata.name}
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-        <span className="text-sm text-white/60">Original Size</span>
-        <span className="font-medium text-white">
-          {imageMetadata.width} × {imageMetadata.height}
-        </span>
-      </div>
-
-      <BorderRadiusSelector
-        title="Border Radius"
-        options={[2, 4, 8, 16, 32, 64]}
-        selected={isCustomRadius ? "custom" : radius}
-        onChange={handleRadiusChange}
-        customValue={radius}
-        onCustomValueChange={setRadius}
-      />
-
-      <OptionSelector
-        title="Background"
-        options={["white", "black", "transparent"]}
-        selected={background}
-        onChange={setBackground}
-        formatOption={(option) =>
-          option.charAt(0).toUpperCase() + option.slice(1)
-        }
-      />
-
-      <div className="flex gap-3">
-        <button
-          onClick={cancel}
-          className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-red-800"
-        >
-          Cancel
-        </button>
-        <SaveAsPngButton
-          imageContent={imageContent}
-          radius={radius}
-          background={background}
-          imageMetadata={imageMetadata}
-        />
-      </div>
+      ) : (
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-4">
+            <BorderRadiusSelector value={radius} onChange={setRadius} />
+            <OptionSelector
+              label="Background"
+              value={background}
+              onChange={setBackground}
+              options={backgroundOptions}
+            />
+          </div>
+          <ImageRenderer
+            imageContent={props.fileUploaderProps.file.content}
+            radius={radius}
+            background={background}
+          />
+          <div className="flex gap-4">
+            <SaveAsPngButton
+              imageContent={props.fileUploaderProps.file.content}
+              radius={radius}
+              background={background}
+              imageMetadata={props.fileUploaderProps.file.metadata}
+            />
+            <button
+              onClick={props.fileUploaderProps.cancel}
+              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            >
+              Choose Another Image
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

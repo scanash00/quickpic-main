@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "check": "concurrently --names \"lint,typecheck,format\" --prefix-colors \"yellow,blue,green\" \"next lint\" \"tsc --noEmit\" \"pnpm run format:check\"",
-    "dev": "next dev --turbo",
+    "dev": "next dev -p 3001",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",

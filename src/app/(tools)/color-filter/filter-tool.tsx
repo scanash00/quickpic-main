@@ -148,31 +148,41 @@ function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-col items-center gap-4">
-        <OptionSelector
-          label="Filter"
-          value={filter}
-          onChange={setFilter}
-          options={filterOptions}
+      {!props.fileUploaderProps.file ? (
+        <UploadBox
+          title="Color Filter Tool"
+          subtitle="Apply filters to your images"
+          description="Choose Image"
+          accept="image/*"
+          onChange={props.fileUploaderProps.handleFileUpload}
+          onDrop={props.fileUploaderProps.handleDrop}
         />
-      </div>
-
-      {props.fileUploaderProps.file ? (
+      ) : (
         <div className="flex flex-col items-center gap-4">
+          <OptionSelector
+            label="Filter"
+            value={filter}
+            onChange={setFilter}
+            options={filterOptions}
+          />
           <ImageRenderer
             imageContent={props.fileUploaderProps.file.content}
             filter={filter}
           />
-          <SaveAsPngButton
-            imageContent={props.fileUploaderProps.file.content}
-            filter={filter}
-            imageMetadata={props.fileUploaderProps.file.metadata}
-          />
+          <div className="flex gap-4">
+            <SaveAsPngButton
+              imageContent={props.fileUploaderProps.file.content}
+              filter={filter}
+              imageMetadata={props.fileUploaderProps.file.metadata}
+            />
+            <button
+              onClick={props.fileUploaderProps.cancel}
+              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            >
+              Choose Another Image
+            </button>
+          </div>
         </div>
-      ) : (
-        <FileDropzone onDrop={props.fileUploaderProps.handleDrop}>
-          <UploadBox />
-        </FileDropzone>
       )}
     </div>
   );

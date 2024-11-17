@@ -132,28 +132,38 @@ function CompressorToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-col items-center gap-4">
-        <OptionSelector
-          label="Compression Quality"
-          value={quality}
-          onChange={setQuality}
-          options={qualityOptions}
+      {!props.fileUploaderProps.file ? (
+        <UploadBox
+          title="Image Compressor"
+          subtitle="Compress images to reduce file size"
+          description="Choose Image"
+          accept="image/*"
+          onChange={props.fileUploaderProps.handleFileUpload}
+          onDrop={props.fileUploaderProps.handleDrop}
         />
-      </div>
-
-      {props.fileUploaderProps.file ? (
-        <div className="flex flex-col items-center gap-4">
-          <ImageRenderer imageContent={props.fileUploaderProps.file.content} />
-          <SaveAsPngButton
-            imageContent={props.fileUploaderProps.file.content}
-            quality={quality}
-            imageMetadata={props.fileUploaderProps.file.metadata}
-          />
-        </div>
       ) : (
-        <FileDropzone onDrop={props.fileUploaderProps.handleDrop}>
-          <UploadBox />
-        </FileDropzone>
+        <div className="flex flex-col items-center gap-4">
+          <OptionSelector
+            label="Quality"
+            value={quality}
+            onChange={setQuality}
+            options={qualityOptions}
+          />
+          <ImageRenderer imageContent={props.fileUploaderProps.file.content} />
+          <div className="flex gap-4">
+            <SaveAsPngButton
+              imageContent={props.fileUploaderProps.file.content}
+              quality={quality}
+              imageMetadata={props.fileUploaderProps.file.metadata}
+            />
+            <button
+              onClick={props.fileUploaderProps.cancel}
+              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            >
+              Choose Another Image
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

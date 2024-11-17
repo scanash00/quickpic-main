@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
 import { UploadBox } from "@/components/shared/upload-box";
-import { SVGScaleSelector } from "@/components/svg-scale-selector";
+import { OptionSelector } from "@/components/shared/option-selector";
 
-export type Scale = "custom" | number;
+export type Scale = number;
 
 function scaleSvg(svgContent: string, scale: number) {
   const parser = new DOMParser();
@@ -137,94 +137,60 @@ import {
 } from "@/hooks/use-file-uploader";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 
-function SVGToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const { rawContent, imageMetadata, handleFileUploadEvent, cancel } =
-    props.fileUploaderProps;
+function SvgToolCore(props: { fileUploaderProps: FileUploaderResult }) {
+  const [scale, setScale] = useLocalStorage<number>("scale", 2);
 
-  const [scale, setScale] = useLocalStorage<Scale>("svgTool_scale", 1);
-  const [customScale, setCustomScale] = useLocalStorage<number>(
-    "svgTool_customScale",
-    1,
-  );
-
-  // Get the actual numeric scale value
-  const effectiveScale = scale === "custom" ? customScale : scale;
-
-  if (!imageMetadata)
-    return (
-      <UploadBox
-        title="Make SVGs into PNGs. Also makes them bigger. (100% free btw.)"
-        description="Upload SVG"
-        accept=".svg"
-        onChange={handleFileUploadEvent}
-      />
-    );
+  const scaleOptions = [
+    { label: "1x", value: 1 },
+    { label: "2x", value: 2 },
+    { label: "4x", value: 4 },
+    { label: "8x", value: 8 },
+  ];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
-      {/* Preview Section */}
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl p-6">
-        <SVGRenderer svgContent={rawContent} />
-        <p className="text-lg font-medium text-white/80">
-          {imageMetadata.name}
-        </p>
-      </div>
-
-      {/* Size Information */}
-      <div className="flex gap-6 text-base">
-        <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Original</span>
-          <span className="font-medium text-white">
-            {imageMetadata.width} × {imageMetadata.height}
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Scaled</span>
-          <span className="font-medium text-white">
-            {imageMetadata.width * effectiveScale} ×{" "}
-            {imageMetadata.height * effectiveScale}
-          </span>
-        </div>
-      </div>
-
-      {/* Scale Controls */}
-      <SVGScaleSelector
-        title="Scale Factor"
-        options={[1, 2, 4, 8, 16, 32, 64]}
-        selected={scale}
-        onChange={setScale}
-        customValue={customScale}
-        onCustomValueChange={setCustomScale}
-      />
-
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={cancel}
-          className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-red-800"
-        >
-          Cancel
-        </button>
-        <SaveAsPngButton
-          svgContent={rawContent}
-          scale={effectiveScale}
-          imageMetadata={imageMetadata}
+    <div className="flex flex-col items-center gap-8">
+      {!props.fileUploaderProps.file ? (
+        <UploadBox
+          title="SVG to PNG Converter"
+          subtitle="Convert SVG files to PNG with custom scale"
+          description="Choose SVG"
+          accept=".svg"
+          onChange={props.fileUploaderProps.handleFileUpload}
+          onDrop={props.fileUploaderProps.handleDrop}
         />
-      </div>
+      ) : (
+        <div className="flex flex-col items-center gap-4">
+          <OptionSelector
+            label="Scale"
+            value={scale}
+            onChange={setScale}
+            options={scaleOptions}
+          />
+          <img
+            src={props.fileUploaderProps.file.content}
+            alt="Preview"
+            className="mb-4 max-w-full"
+          />
+          <div className="flex gap-4">
+            <SaveAsPngButton
+              imageContent={props.fileUploaderProps.file.content}
+              scale={scale}
+              imageMetadata={props.fileUploaderProps.file.metadata}
+            />
+            <button
+              onClick={props.fileUploaderProps.cancel}
+              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            >
+              Choose Another SVG
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export function SVGTool() {
+export function SvgTool() {
   const fileUploaderProps = useFileUploader();
-  return (
-    <FileDropzone
-      setCurrentFile={fileUploaderProps.handleFileUpload}
-      acceptedFileTypes={["image/svg+xml", ".svg"]}
-      dropText="Drop SVG file"
-    >
-      <SVGToolCore fileUploaderProps={fileUploaderProps} />
-    </FileDropzone>
-  );
+  return <SvgToolCore fileUploaderProps={fileUploaderProps} />;
 }

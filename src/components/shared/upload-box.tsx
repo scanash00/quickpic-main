@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 interface UploadBoxProps {
   title: string;
@@ -6,6 +6,7 @@ interface UploadBoxProps {
   description: string;
   accept: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onDrop?: (files: File[]) => void;
 }
 
 export function UploadBox({
@@ -14,18 +15,40 @@ export function UploadBox({
   description,
   accept,
   onChange,
+  onDrop,
 }: UploadBoxProps) {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0 && onDrop) {
+        onDrop(files);
+      }
+    },
+    [onDrop],
+  );
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-4">
       <div className="flex flex-col items-center gap-2">
-        <p className="text-center text-white">{title}</p>
+        <p className="text-center text-2xl font-bold text-white">{title}</p>
         {subtitle && (
           <p className="inline-block rounded-full border border-white/30 bg-white/5 px-2 py-0.5 text-center text-sm text-white/60">
             {subtitle}
           </p>
         )}
       </div>
-      <div className="flex w-72 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-white/30 bg-white/10 p-6 backdrop-blur-sm">
+      <div
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className="flex w-72 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-white/30 bg-white/10 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-white/50"
+      >
         <svg
           className="h-8 w-8 text-gray-400"
           fill="none"
