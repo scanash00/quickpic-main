@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
-import { withPlausibleProxy } from "next-plausible";
+const { withPlausibleProxy } = require("next-plausible");
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   /* config options here */
   experimental: {
     reactCompiler: true,
@@ -16,4 +16,4 @@ const nextConfig: NextConfig = {
 
 const outputConfig = withPlausibleProxy()(nextConfig);
 
-export default outputConfig;
+module.exports = outputConfig;
