@@ -22,7 +22,7 @@ export function OptionSelector<T>({
 }: OptionSelectorProps<T>) {
   return (
     <div className="flex flex-col gap-2 animate-fade-in">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-white/60">
         {label}
       </label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -36,15 +36,15 @@ export function OptionSelector<T>({
                 relative flex items-center justify-center p-3 rounded-lg border-2
                 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
                 ${isSelected 
-                  ? 'border-blue-500 bg-blue-50 text-blue-800' 
-                  : 'border-gray-200 bg-white text-gray-900 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-500/20 text-blue-300' 
+                  : 'border-white/20 bg-white/10 text-white/80 hover:border-white/30 hover:bg-white/20'
                 }
               `}
               onClick={() => onChange(option.value)}
             >
               <span className="text-sm font-medium">{option.label}</span>
               {isSelected && (
-                <div className="absolute right-2 text-blue-500 animate-fade-in">
+                <div className="absolute right-2 text-blue-300 animate-fade-in">
                   <Check className="h-4 w-4" />
                 </div>
               )}
