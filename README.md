@@ -59,7 +59,6 @@ npm start
 ## Features
 - Image upscaling
 - Square image conversion
-- Watermark addition
 - Image effects
 - Drag and drop support
 - Paste image support
