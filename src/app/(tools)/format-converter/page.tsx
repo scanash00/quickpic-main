@@ -5,6 +5,6 @@ export const metadata = {
   description: "Convert images between different formats",
 };
 
-export default function ConverterToolPage() {
+export default function Page() {
   return <ConverterTool />;
 }

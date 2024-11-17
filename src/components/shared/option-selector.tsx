@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Check } from "lucide-react";
 
 interface Option<T> {
   label: string;
@@ -21,26 +21,37 @@ export function OptionSelector<T>({
   options,
 }: OptionSelectorProps<T>) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <label className="text-sm font-medium text-gray-200">{label}</label>
-      <select
-        value={String(value)}
-        onChange={(e) => {
-          const selectedOption = options.find(
-            (opt) => String(opt.value) === e.target.value
+    <div className="flex flex-col gap-2 animate-fade-in">
+      <label className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {options.map((option) => {
+          const isSelected = option.value === value;
+          return (
+            <button
+              key={option.label}
+              type="button"
+              className={`
+                relative flex items-center justify-center p-3 rounded-lg border-2
+                transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                ${isSelected 
+                  ? 'border-blue-500 bg-blue-50 text-blue-800' 
+                  : 'border-gray-200 bg-white text-gray-900 hover:border-gray-300'
+                }
+              `}
+              onClick={() => onChange(option.value)}
+            >
+              <span className="text-sm font-medium">{option.label}</span>
+              {isSelected && (
+                <div className="absolute right-2 text-blue-500 animate-fade-in">
+                  <Check className="h-4 w-4" />
+                </div>
+              )}
+            </button>
           );
-          if (selectedOption) {
-            onChange(selectedOption.value);
-          }
-        }}
-        className="rounded-lg bg-white/10 px-4 py-2 text-white"
-      >
-        {options.map((option) => (
-          <option key={String(option.value)} value={String(option.value)}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        })}
+      </div>
     </div>
   );
 }

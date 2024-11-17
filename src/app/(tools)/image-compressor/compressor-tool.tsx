@@ -1,164 +1,100 @@
 "use client";
-import { usePlausible } from "next-plausible";
-import { useEffect, useMemo, useRef, useState } from "react";
+
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { UploadBox } from "@/components/shared/upload-box";
 import { OptionSelector } from "@/components/shared/option-selector";
 import {
-  useFileUploader,
   type FileUploaderResult,
+  useFileUploader,
 } from "@/hooks/use-file-uploader";
-import { FileDropzone } from "@/components/shared/file-dropzone";
+import { Download } from "lucide-react";
 
-type Quality = "high" | "medium" | "low";
+type Quality = 0.1 | 0.3 | 0.5 | 0.7 | 0.9;
 
-function useImageConverter(props: {
-  canvas: HTMLCanvasElement | null;
-  imageContent: string;
-  quality: Quality;
-  fileName?: string;
-  imageMetadata: { width: number; height: number; name: string };
-}) {
-  const { width, height } = useMemo(() => {
-    return {
-      width: props.imageMetadata.width,
-      height: props.imageMetadata.height,
-    };
-  }, [props.imageMetadata]);
-
-  const getQualityValue = (quality: Quality): number => {
-    switch (quality) {
-      case "high":
-        return 0.8;
-      case "medium":
-        return 0.5;
-      case "low":
-        return 0.2;
-    }
-  };
-
-  const convertToPng = async () => {
-    const ctx = props.canvas?.getContext("2d");
-    if (!ctx) throw new Error("Failed to get canvas context");
-
-    const saveImage = () => {
-      if (props.canvas) {
-        const dataURL = props.canvas.toDataURL(
-          "image/jpeg",
-          getQualityValue(props.quality),
-        );
-        const link = document.createElement("a");
-        link.href = dataURL;
-        const imageFileName = props.imageMetadata.name ?? "image_compressed";
-        link.download = `${imageFileName.replace(/\..+$/, "")}_${props.quality}.jpg`;
-        link.click();
-      }
-    };
-
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, width, height);
-      saveImage();
-    };
-
-    img.src = props.imageContent;
-  };
-
-  return {
-    convertToPng,
-    canvasProps: { width, height },
-  };
-}
-
-interface ImageRendererProps {
-  imageContent: string;
-}
-
-const ImageRenderer = ({ imageContent }: ImageRendererProps) => {
-  return (
-    <div className="relative w-[500px]">
-      <img
-        src={imageContent}
-        alt="Preview"
-        className="max-h-[500px] w-full object-contain"
-      />
-    </div>
-  );
-};
-
-function SaveAsPngButton({
-  imageContent,
-  quality,
-  imageMetadata,
-}: {
-  imageContent: string;
-  quality: Quality;
-  imageMetadata: { width: number; height: number; name: string };
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const plausible = usePlausible();
-
-  const { convertToPng, canvasProps } = useImageConverter({
-    canvas: canvasRef.current,
-    imageContent,
-    quality,
-    imageMetadata,
-  });
-
-  return (
-    <>
-      <canvas ref={canvasRef} {...canvasProps} className="hidden" />
-      <button
-        onClick={() => {
-          plausible("save-compressed-image");
-          convertToPng();
-        }}
-        className="rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600"
-      >
-        Save Compressed Image
-      </button>
-    </>
-  );
-}
+const qualityOptions = [
+  { label: "10%", value: 0.1 as Quality },
+  { label: "30%", value: 0.3 as Quality },
+  { label: "50%", value: 0.5 as Quality },
+  { label: "70%", value: 0.7 as Quality },
+  { label: "90%", value: 0.9 as Quality },
+];
 
 function CompressorToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [quality, setQuality] = useLocalStorage<Quality>("quality", "high");
+  const [quality, setQuality] = useLocalStorage<Quality>("quality", 0.7);
 
-  const qualityOptions = [
-    { label: "High Quality", value: "high" as const },
-    { label: "Medium Quality", value: "medium" as const },
-    { label: "Low Quality", value: "low" as const },
-  ];
+  const handleDownload = async () => {
+    if (!props.fileUploaderProps.file) return;
+
+    const img = new Image();
+    img.src = props.fileUploaderProps.file.content;
+
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", quality);
+
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `${props.fileUploaderProps.file.metadata.name}-compressed.jpg`;
+    link.click();
+  };
 
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className="flex flex-col items-center gap-8 p-6">
       {!props.fileUploaderProps.file ? (
         <UploadBox
           title="Image Compressor"
-          subtitle="Compress images to reduce file size"
+          subtitle="Compress your images to reduce file size"
           description="Choose Image"
           accept="image/*"
           onChange={props.fileUploaderProps.handleFileUpload}
           onDrop={props.fileUploaderProps.handleDrop}
         />
       ) : (
-        <div className="flex flex-col items-center gap-4">
+        <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
           <OptionSelector
             label="Quality"
             value={quality}
             onChange={setQuality}
             options={qualityOptions}
           />
-          <ImageRenderer imageContent={props.fileUploaderProps.file.content} />
-          <div className="flex gap-4">
-            <SaveAsPngButton
-              imageContent={props.fileUploaderProps.file.content}
-              quality={quality}
-              imageMetadata={props.fileUploaderProps.file.metadata}
+          
+          <div className="relative w-full rounded-lg border border-gray-200 bg-white p-4">
+            <img
+              src={props.fileUploaderProps.file.content}
+              alt="Preview"
+              className="mx-auto max-h-[500px] w-full object-contain"
             />
+            <div className="absolute top-2 right-2">
+              <div className="rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
+                {props.fileUploaderProps.file.metadata.width} x {props.fileUploaderProps.file.metadata.height}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4 justify-center">
             <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800"
+              onClick={handleDownload}
+            >
+              <Download className="h-5 w-5" />
+              <span>Download Compressed</span>
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-200 active:bg-gray-300"
               onClick={props.fileUploaderProps.cancel}
-              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
             >
               Choose Another Image
             </button>

@@ -1,4 +1,4 @@
-import { SquareTool } from "./square-tool";
+import { SquareImage } from "./square-tool";
 
 export const metadata = {
   title: "Square Image Generator - QuickPic",
@@ -6,6 +6,6 @@ export const metadata = {
     "Have an image you wish was square? We gotchu. Good for YouTube Community posts especially",
 };
 
-export default function SquareToolPage() {
-  return <SquareTool />;
+export default function Page() {
+  return <SquareImage />;
 }

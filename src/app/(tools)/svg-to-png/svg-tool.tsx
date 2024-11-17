@@ -1,187 +1,100 @@
 "use client";
-import { usePlausible } from "next-plausible";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { UploadBox } from "@/components/shared/upload-box";
 import { OptionSelector } from "@/components/shared/option-selector";
-
-export type Scale = number;
-
-function scaleSvg(svgContent: string, scale: number) {
-  const parser = new DOMParser();
-  const svgDoc = parser.parseFromString(svgContent, "image/svg+xml");
-  const svgElement = svgDoc.documentElement;
-  const width = parseInt(svgElement.getAttribute("width") ?? "300");
-  const height = parseInt(svgElement.getAttribute("height") ?? "150");
-
-  const scaledWidth = width * scale;
-  const scaledHeight = height * scale;
-
-  svgElement.setAttribute("width", scaledWidth.toString());
-  svgElement.setAttribute("height", scaledHeight.toString());
-
-  return new XMLSerializer().serializeToString(svgDoc);
-}
-
-function useSvgConverter(props: {
-  canvas: HTMLCanvasElement | null;
-  svgContent: string;
-  originalContent?: string;
-  scale: number;
-  fileName?: string;
-  imageMetadata: { width: number; height: number; name: string };
-}) {
-  const { width, height, scaledSvg } = useMemo(() => {
-    const contentToScale = props.originalContent ?? props.svgContent;
-    const scaledSvg = scaleSvg(contentToScale, props.scale);
-
-    return {
-      width: props.imageMetadata.width * props.scale,
-      height: props.imageMetadata.height * props.scale,
-      scaledSvg,
-    };
-  }, [props.svgContent, props.originalContent, props.scale, props.imageMetadata]);
-
-  const convertToPng = async () => {
-    const ctx = props.canvas?.getContext("2d");
-    if (!ctx) throw new Error("Failed to get canvas context");
-
-    // Trigger a "save image" of the resulting canvas content
-    const saveImage = () => {
-      if (props.canvas) {
-        const dataURL = props.canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = dataURL;
-        const svgFileName = props.imageMetadata.name ?? "svg_converted";
-
-        // Remove the .svg extension
-        link.download = `${svgFileName.replace(".svg", "")}-${props.scale}x.png`;
-        link.click();
-      }
-    };
-
-    const img = new Image();
-    // Call saveImage after the image has been drawn
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      saveImage();
-    };
-
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(scaledSvg)}`;
-  };
-
-  return {
-    convertToPng,
-    canvasProps: { width: width, height: height },
-  };
-}
-
-interface SVGRendererProps {
-  svgContent: string;
-}
-
-function SVGRenderer({ svgContent }: SVGRendererProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.innerHTML = svgContent;
-      const svgElement = containerRef.current.querySelector("svg");
-      if (svgElement) {
-        svgElement.setAttribute("width", "100%");
-        svgElement.setAttribute("height", "100%");
-      }
-    }
-  }, [svgContent]);
-
-  return <div ref={containerRef} />;
-}
-
-function SaveAsPngButton({
-  imageContent,
-  originalContent,
-  scale,
-  imageMetadata,
-}: {
-  imageContent: string;
-  originalContent?: string;
-  scale: number;
-  imageMetadata: { width: number; height: number; name: string };
-}) {
-  const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
-  const { convertToPng, canvasProps } = useSvgConverter({
-    canvas: canvasRef,
-    svgContent: imageContent,
-    originalContent,
-    scale,
-    imageMetadata,
-  });
-
-  const plausible = usePlausible();
-
-  return (
-    <div>
-      <canvas ref={setCanvasRef} {...canvasProps} hidden />
-      <button
-        onClick={() => {
-          plausible("convert-svg-to-png");
-          void convertToPng();
-        }}
-        className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
-      >
-        Save as PNG
-      </button>
-    </div>
-  );
-}
-
 import {
   type FileUploaderResult,
   useFileUploader,
 } from "@/hooks/use-file-uploader";
-import { FileDropzone } from "@/components/shared/file-dropzone";
+import { Download } from "lucide-react";
+
+type Scale = 1 | 2 | 3 | 4 | 5;
+
+const scaleOptions = [
+  { label: "1x", value: 1 as Scale },
+  { label: "2x", value: 2 as Scale },
+  { label: "3x", value: 3 as Scale },
+  { label: "4x", value: 4 as Scale },
+  { label: "5x", value: 5 as Scale },
+];
 
 function SvgToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [scale, setScale] = useLocalStorage<number>("scale", 2);
+  const [scale, setScale] = useLocalStorage<Scale>("scale", 1);
 
-  const scaleOptions = [
-    { label: "1x", value: 1 },
-    { label: "2x", value: 2 },
-    { label: "4x", value: 4 },
-    { label: "8x", value: 8 },
-  ];
+  const handleDownload = async () => {
+    if (!props.fileUploaderProps.file) return;
+
+    const img = new Image();
+    img.src = props.fileUploaderProps.file.content;
+
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `${props.fileUploaderProps.file.metadata.name}.png`;
+    link.click();
+  };
 
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className="flex flex-col items-center gap-8 p-6">
       {!props.fileUploaderProps.file ? (
         <UploadBox
-          title="SVG to PNG Converter"
-          subtitle="Convert SVG files to PNG with custom scale"
+          title="SVG to PNG"
+          subtitle="Convert SVG files to PNG format"
           description="Choose SVG"
           accept=".svg"
           onChange={props.fileUploaderProps.handleFileUpload}
           onDrop={props.fileUploaderProps.handleDrop}
         />
       ) : (
-        <div className="flex flex-col items-center gap-4">
+        <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
           <OptionSelector
             label="Scale"
             value={scale}
             onChange={setScale}
             options={scaleOptions}
           />
-          <SVGRenderer svgContent={props.fileUploaderProps.file.content} />
-          <div className="flex gap-4">
-            <SaveAsPngButton
-              imageContent={props.fileUploaderProps.file.content}
-              originalContent={props.fileUploaderProps.file.originalContent}
-              scale={scale}
-              imageMetadata={props.fileUploaderProps.file.metadata}
+          
+          <div className="relative w-full rounded-lg border border-gray-200 bg-white p-4">
+            <img
+              src={props.fileUploaderProps.file.content}
+              alt="Preview"
+              className="mx-auto max-h-[500px] w-full object-contain"
             />
+            <div className="absolute top-2 right-2">
+              <div className="rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
+                {props.fileUploaderProps.file.metadata.width} x {props.fileUploaderProps.file.metadata.height}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4 justify-center">
             <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800"
+              onClick={handleDownload}
+            >
+              <Download className="h-5 w-5" />
+              <span>Download PNG</span>
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-200 active:bg-gray-300"
               onClick={props.fileUploaderProps.cancel}
-              className="rounded-lg bg-gray-500 px-4 py-2 font-medium text-white hover:bg-gray-600"
             >
               Choose Another SVG
             </button>

@@ -1,36 +1,27 @@
 "use client";
+
 import { usePlausible } from "next-plausible";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+
 import { UploadBox } from "@/components/shared/upload-box";
 import { OptionSelector } from "@/components/shared/option-selector";
-import { BorderRadiusSelector } from "@/components/border-radius-selector";
 import {
-  useFileUploader,
   type FileUploaderResult,
+  useFileUploader,
 } from "@/hooks/use-file-uploader";
-import { FileDropzone } from "@/components/shared/file-dropzone";
 
-type Radius = number;
+type BorderRadius = 4 | 8 | 12 | 16 | 20 | 24 | 28 | 32;
 
-type BackgroundOption = "white" | "black" | "transparent";
-
-function useImageConverter(props: {
+function useImageRounder(props: {
   canvas: HTMLCanvasElement | null;
   imageContent: string;
-  radius: Radius;
-  background: BackgroundOption;
-  fileName?: string;
+  borderRadius: number;
   imageMetadata: { width: number; height: number; name: string };
 }) {
-  const { width, height } = useMemo(() => {
-    return {
-      width: props.imageMetadata.width,
-      height: props.imageMetadata.height,
-    };
-  }, [props.imageMetadata]);
+  const { width, height } = props.imageMetadata;
 
-  const convertToPng = async () => {
+  const roundImage = useCallback(async () => {
     const ctx = props.canvas?.getContext("2d");
     if (!ctx) throw new Error("Failed to get canvas context");
 
@@ -39,8 +30,7 @@ function useImageConverter(props: {
         const dataURL = props.canvas.toDataURL("image/png");
         const link = document.createElement("a");
         link.href = dataURL;
-        const imageFileName = props.imageMetadata.name ?? "image_converted";
-        link.download = `${imageFileName.replace(/\..+$/, "")}.png`;
+        link.download = `${props.imageMetadata.name}-rounded.png`;
         link.click();
       }
     };
@@ -48,128 +38,105 @@ function useImageConverter(props: {
     const img = new Image();
     img.onload = () => {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = props.background;
-      ctx.fillRect(0, 0, width, height);
+      ctx.save();
+
+      // Create rounded rectangle path
       ctx.beginPath();
-      ctx.moveTo(props.radius, 0);
-      ctx.lineTo(width - props.radius, 0);
-      ctx.quadraticCurveTo(width, 0, width, props.radius);
-      ctx.lineTo(width, height - props.radius);
-      ctx.quadraticCurveTo(width, height, width - props.radius, height);
-      ctx.lineTo(props.radius, height);
-      ctx.quadraticCurveTo(0, height, 0, height - props.radius);
-      ctx.lineTo(0, props.radius);
-      ctx.quadraticCurveTo(0, 0, props.radius, 0);
+      ctx.moveTo(props.borderRadius, 0);
+      ctx.lineTo(width - props.borderRadius, 0);
+      ctx.quadraticCurveTo(width, 0, width, props.borderRadius);
+      ctx.lineTo(width, height - props.borderRadius);
+      ctx.quadraticCurveTo(width, height, width - props.borderRadius, height);
+      ctx.lineTo(props.borderRadius, height);
+      ctx.quadraticCurveTo(0, height, 0, height - props.borderRadius);
+      ctx.lineTo(0, props.borderRadius);
+      ctx.quadraticCurveTo(0, 0, props.borderRadius, 0);
       ctx.closePath();
+
+      // Clip to the rounded rectangle path
       ctx.clip();
+
+      // Draw the image
       ctx.drawImage(img, 0, 0, width, height);
+
+      ctx.restore();
       saveImage();
     };
 
     img.src = props.imageContent;
-  };
+  }, [props.canvas, props.imageContent, props.borderRadius, props.imageMetadata, width, height]);
 
   return {
-    convertToPng,
-    canvasProps: { width: width, height: height },
+    roundImage,
+    canvasProps: { width, height },
   };
 }
 
-interface ImageRendererProps {
-  imageContent: string;
-  radius: Radius;
-  background: BackgroundOption;
-}
-
-const ImageRenderer = ({
+function SaveAsRoundedButton({
   imageContent,
-  radius,
-  background,
-}: ImageRendererProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      const imgElement = containerRef.current.querySelector("img");
-      if (imgElement) {
-        imgElement.style.borderRadius = `${radius}px`;
-      }
-    }
-  }, [imageContent, radius]);
-
-  return (
-    <div ref={containerRef} className="relative w-[500px]">
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: background, borderRadius: 0 }}
-      />
-      <img
-        src={imageContent}
-        alt="Preview"
-        className="relative rounded-lg"
-        style={{ width: "100%", height: "auto", objectFit: "contain" }}
-      />
-    </div>
-  );
-};
-
-function SaveAsPngButton({
-  imageContent,
-  radius,
-  background,
+  borderRadius,
   imageMetadata,
 }: {
   imageContent: string;
-  radius: Radius;
-  background: BackgroundOption;
+  borderRadius: number;
   imageMetadata: { width: number; height: number; name: string };
 }) {
-  const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
-  const { convertToPng, canvasProps } = useImageConverter({
-    canvas: canvasRef,
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const plausible = usePlausible();
+
+  const { roundImage, canvasProps } = useImageRounder({
+    canvas: canvasRef.current,
     imageContent,
-    radius,
-    background,
+    borderRadius,
     imageMetadata,
   });
 
-  const plausible = usePlausible();
+  const handleSaveImage = useCallback(async () => {
+    await roundImage();
+  }, [roundImage]);
 
   return (
-    <div>
-      <canvas ref={setCanvasRef} {...canvasProps} hidden />
+    <>
+      <canvas ref={canvasRef} {...canvasProps} className="hidden" />
       <button
-        onClick={() => {
-          plausible("convert-image-to-png");
-          void convertToPng();
+        onClick={async () => {
+          plausible("round-image");
+          await handleSaveImage();
         }}
-        className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+        className="rounded-lg bg-green-700 px-4 py-2 font-medium text-white shadow-md transition-colors duration-200 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
       >
-        Save as PNG
+        Save Image
       </button>
-    </div>
+    </>
   );
 }
 
-function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const [radius, setRadius] = useLocalStorage<number>("radius", 16);
-  const [background, setBackground] = useLocalStorage<BackgroundOption>(
-    "background",
-    "transparent"
-  );
+function RoundedBorderCore(props: { fileUploaderProps: FileUploaderResult }) {
+  const [borderRadius, setBorderRadius] = useLocalStorage<BorderRadius>("borderRadius", 8);
+  const [customRadius, setCustomRadius] = useState<number>(8);
 
-  const backgroundOptions = [
-    { label: "Transparent", value: "transparent" as const },
-    { label: "White", value: "white" as const },
-    { label: "Black", value: "black" as const },
+  const radiusOptions = [
+    { label: "4px", value: 4 },
+    { label: "8px", value: 8 },
+    { label: "12px", value: 12 },
+    { label: "16px", value: 16 },
+    { label: "20px", value: 20 },
+    { label: "24px", value: 24 },
+    { label: "28px", value: 28 },
+    { label: "32px", value: 32 },
   ];
+
+  const handleRadiusChange = (value: number) => {
+    setBorderRadius(value as BorderRadius);
+    setCustomRadius(value);
+  };
 
   return (
     <div className="flex flex-col items-center gap-8">
       {!props.fileUploaderProps.file ? (
         <UploadBox
-          title="Corner Rounder"
-          subtitle="Round the corners of your images"
+          title="Rounded Border"
+          subtitle="Add rounded corners to images"
           description="Choose Image"
           accept="image/*"
           onChange={props.fileUploaderProps.handleFileUpload}
@@ -177,25 +144,21 @@ function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
         />
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <div className="flex gap-4">
-            <BorderRadiusSelector value={radius} onChange={setRadius} />
-            <OptionSelector
-              label="Background"
-              value={background}
-              onChange={setBackground}
-              options={backgroundOptions}
-            />
-          </div>
-          <ImageRenderer
-            imageContent={props.fileUploaderProps.file.content}
-            radius={radius}
-            background={background}
+          <OptionSelector
+            label="Border Radius"
+            value={borderRadius}
+            onChange={handleRadiusChange}
+            options={radiusOptions}
+          />
+          <img
+            src={props.fileUploaderProps.file.content}
+            alt="Preview"
+            className="max-h-[500px] w-full object-contain"
           />
           <div className="flex gap-4">
-            <SaveAsPngButton
+            <SaveAsRoundedButton
               imageContent={props.fileUploaderProps.file.content}
-              radius={radius}
-              background={background}
+              borderRadius={customRadius}
               imageMetadata={props.fileUploaderProps.file.metadata}
             />
             <button
@@ -211,16 +174,7 @@ function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
   );
 }
 
-export function RoundedTool() {
+export function RoundedBorder() {
   const fileUploaderProps = useFileUploader();
-
-  return (
-    <FileDropzone
-      setCurrentFile={fileUploaderProps.handleFileUpload}
-      acceptedFileTypes={["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]}
-      dropText="Drop image file"
-    >
-      <RoundedToolCore fileUploaderProps={fileUploaderProps} />
-    </FileDropzone>
-  );
+  return <RoundedBorderCore fileUploaderProps={fileUploaderProps} />;
 }

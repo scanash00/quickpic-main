@@ -5,6 +5,6 @@ export const metadata = {
   description: "Compress your images without losing quality",
 };
 
-export default function CompressorToolPage() {
+export default function Page() {
   return <CompressorTool />;
 }
