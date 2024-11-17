@@ -1,11 +1,11 @@
-import { FilterTool } from "./filter-tool";
+import type { Metadata } from "next";
+import { ColorFilter } from "./filter-tool";
 
-export const metadata = {
-  title: "Color Filter - QuickPic",
-  description:
-    "Apply color effects to your images (grayscale, sepia, and more)",
+export const metadata: Metadata = {
+  title: "Image Filter - QuickPic",
+  description: "Apply beautiful filters to your images with real-time preview.",
 };
 
-export default function FilterToolPage() {
-  return <FilterTool />;
+export default function Page() {
+  return <ColorFilter />;
 }

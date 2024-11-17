@@ -1,10 +1,11 @@
-import { SvgTool } from "./svg-tool";
+import type { Metadata } from "next";
+import { SvgToPng } from "./svg-tool";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "SVG to PNG converter - QuickPic",
-  description: "Convert SVGs to PNGs. Also makes them bigger.",
+  description: "Convert SVG files to PNG format with high quality.",
 };
 
-export default function SvgToolPage() {
-  return <SvgTool />;
+export default function Page() {
+  return <SvgToPng />;
 }

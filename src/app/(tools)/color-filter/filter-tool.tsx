@@ -24,7 +24,7 @@ const filterStyles: Record<Filter, React.CSSProperties> = {
   contrast: { filter: "contrast(200%)" },
 };
 
-const filterOptions = [
+const filterOptions: Array<{ label: string; value: Filter }> = [
   { label: "None", value: "none" },
   { label: "Grayscale", value: "grayscale" },
   { label: "Sepia", value: "sepia" },
@@ -55,14 +55,14 @@ function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.filter = filterStyles[filter].filter || "none";
+    ctx.filter = filterStyles[filter].filter ?? "none";
     ctx.drawImage(img, 0, 0);
 
     const dataUrl = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = dataUrl;
     const fileName = props.fileUploaderProps.file.metadata.name;
-    const baseName = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+    const baseName = fileName.substring(0, fileName.lastIndexOf(".")) ?? fileName;
     link.download = `${baseName}-${filter}.png`;
     link.click();
   };
@@ -104,7 +104,7 @@ function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
   );
 }
 
-export function FilterTool() {
+export function ColorFilter() {
   const fileUploaderProps = useFileUploader();
   return <FilterToolCore fileUploaderProps={fileUploaderProps} />;
 }
