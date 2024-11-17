@@ -15,7 +15,7 @@ const qualityOptions = [
 
 type QualityOption = typeof qualityOptions[number]["id"];
 
-export function ImageCompressor() {
+export function CompressorTool() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [selectedQuality, setSelectedQuality] = useState<QualityOption>("high");

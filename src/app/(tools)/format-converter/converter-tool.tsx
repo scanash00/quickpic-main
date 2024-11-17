@@ -14,7 +14,7 @@ const formatOptions = [
 
 type FormatOption = typeof formatOptions[number]["id"];
 
-export function FormatConverter() {
+export function ConverterTool() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<FormatOption>("png");
