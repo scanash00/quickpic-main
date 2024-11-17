@@ -10,6 +10,7 @@ interface FileMetadata {
 
 interface ProcessedFile {
   content: string;
+  originalContent?: string;
   metadata: FileMetadata;
 }
 
@@ -26,6 +27,7 @@ const parseSvgFile = (content: string, fileName: string): ProcessedFile => {
 
   return {
     content: svgUrl,
+    originalContent: content,
     metadata: {
       width,
       height,

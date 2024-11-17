@@ -27,19 +27,21 @@ function scaleSvg(svgContent: string, scale: number) {
 function useSvgConverter(props: {
   canvas: HTMLCanvasElement | null;
   svgContent: string;
+  originalContent?: string;
   scale: number;
   fileName?: string;
   imageMetadata: { width: number; height: number; name: string };
 }) {
   const { width, height, scaledSvg } = useMemo(() => {
-    const scaledSvg = scaleSvg(props.svgContent, props.scale);
+    const contentToScale = props.originalContent ?? props.svgContent;
+    const scaledSvg = scaleSvg(contentToScale, props.scale);
 
     return {
       width: props.imageMetadata.width * props.scale,
       height: props.imageMetadata.height * props.scale,
       scaledSvg,
     };
-  }, [props.svgContent, props.scale, props.imageMetadata]);
+  }, [props.svgContent, props.originalContent, props.scale, props.imageMetadata]);
 
   const convertToPng = async () => {
     const ctx = props.canvas?.getContext("2d");
@@ -98,10 +100,12 @@ function SVGRenderer({ svgContent }: SVGRendererProps) {
 
 function SaveAsPngButton({
   imageContent,
+  originalContent,
   scale,
   imageMetadata,
 }: {
   imageContent: string;
+  originalContent?: string;
   scale: number;
   imageMetadata: { width: number; height: number; name: string };
 }) {
@@ -109,6 +113,7 @@ function SaveAsPngButton({
   const { convertToPng, canvasProps } = useSvgConverter({
     canvas: canvasRef,
     svgContent: imageContent,
+    originalContent,
     scale,
     imageMetadata,
   });
@@ -170,6 +175,7 @@ function SvgToolCore(props: { fileUploaderProps: FileUploaderResult }) {
           <div className="flex gap-4">
             <SaveAsPngButton
               imageContent={props.fileUploaderProps.file.content}
+              originalContent={props.fileUploaderProps.file.originalContent}
               scale={scale}
               imageMetadata={props.fileUploaderProps.file.metadata}
             />
