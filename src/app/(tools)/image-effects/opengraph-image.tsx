@@ -1,4 +1,4 @@
-import { ogImageGenerator } from "@/app/utils/og-generator";
+import { GenerateImage } from "@/app/utils/og-generator";
 
 export const runtime = "edge";
 export const alt = "QuickPic Image Effects";
@@ -9,7 +9,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  return ogImageGenerator({
+  return GenerateImage({
     title: "Image Effects",
     description: "Apply beautiful filters and adjustments to your images",
   });

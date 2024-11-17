@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { UploadCloud } from "lucide-react";
 import { FileDropzone } from "./file-dropzone";
 import { styles } from "../ui/styles";
@@ -21,6 +22,26 @@ export function UploadBox({
   onChange,
   onDrop,
 }: UploadBoxProps) {
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.indexOf("image") !== -1) {
+          const file = item.getAsFile();
+          if (file) {
+            onDrop([file]);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [onDrop]);
+
   return (
     <FileDropzone
       acceptedFileTypes={[accept]}
@@ -28,7 +49,12 @@ export function UploadBox({
       setCurrentFile={(file) => onDrop([file])}
     >
       <div className={styles.uploadBox.container}>
-        <div className={`${styles.uploadBox.inner} group`}>
+        <div 
+          className={`${styles.uploadBox.inner} group perspective-1000 transition-transform duration-300 hover:rotate-x-1 hover:rotate-y-2 hover:scale-[1.02] hover:shadow-xl`}
+          style={{ 
+            transformStyle: "preserve-3d",
+          }}
+        >
           <div className={styles.uploadBox.iconContainer}>
             <UploadCloud className="h-7 w-7 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110" />
           </div>
@@ -37,7 +63,7 @@ export function UploadBox({
             <p className={styles.uploadBox.subtitle}>{subtitle}</p>
           </div>
           <div className={styles.uploadBox.buttonContainer}>
-            <span className={styles.uploadBox.dragText}>Drag and drop or</span>
+            <span className={styles.uploadBox.dragText}>Drag and drop, paste, or</span>
             <button
               type="button"
               className={styles.uploadBox.uploadButton}
