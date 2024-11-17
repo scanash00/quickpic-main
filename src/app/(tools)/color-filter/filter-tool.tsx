@@ -1,22 +1,17 @@
 "use client";
 
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { styles } from "@/components/ui/styles";
 import { UploadBox } from "@/components/shared/upload-box";
+import { ImagePreview } from "@/components/shared/image-preview";
+import { ActionButtons } from "@/components/shared/action-buttons";
 import { OptionSelector } from "@/components/shared/option-selector";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import {
   type FileUploaderResult,
   useFileUploader,
 } from "@/hooks/use-file-uploader";
 
-type Filter = "grayscale" | "sepia" | "invert" | "blur" | "none";
-
-const filterOptions = [
-  { label: "None", value: "none" as Filter },
-  { label: "Grayscale", value: "grayscale" as Filter },
-  { label: "Sepia", value: "sepia" as Filter },
-  { label: "Invert", value: "invert" as Filter },
-  { label: "Blur", value: "blur" as Filter },
-];
+type Filter = "none" | "grayscale" | "sepia" | "invert" | "blur" | "saturate" | "brightness" | "contrast";
 
 const filterStyles: Record<Filter, React.CSSProperties> = {
   none: {},
@@ -24,13 +19,56 @@ const filterStyles: Record<Filter, React.CSSProperties> = {
   sepia: { filter: "sepia(100%)" },
   invert: { filter: "invert(100%)" },
   blur: { filter: "blur(5px)" },
+  saturate: { filter: "saturate(200%)" },
+  brightness: { filter: "brightness(150%)" },
+  contrast: { filter: "contrast(200%)" },
 };
+
+const filterOptions = [
+  { label: "None", value: "none" },
+  { label: "Grayscale", value: "grayscale" },
+  { label: "Sepia", value: "sepia" },
+  { label: "Invert", value: "invert" },
+  { label: "Blur", value: "blur" },
+  { label: "Saturate", value: "saturate" },
+  { label: "Brightness", value: "brightness" },
+  { label: "Contrast", value: "contrast" },
+];
 
 function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
   const [filter, setFilter] = useLocalStorage<Filter>("filter", "none");
 
+  const handleDownload = async () => {
+    if (!props.fileUploaderProps.file) return;
+
+    const img = new Image();
+    img.src = props.fileUploaderProps.file.content;
+
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.filter = filterStyles[filter].filter || "none";
+    ctx.drawImage(img, 0, 0);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    const fileName = props.fileUploaderProps.file.metadata.name;
+    const baseName = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+    link.download = `${baseName}-${filter}.png`;
+    link.click();
+  };
+
   return (
-    <div className="flex flex-col items-center gap-8 p-6">
+    <div className={styles.container}>
       {!props.fileUploaderProps.file ? (
         <UploadBox
           title="Image Filter"
@@ -41,7 +79,7 @@ function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
           onDrop={props.fileUploaderProps.handleDrop}
         />
       ) : (
-        <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
+        <div className={styles.toolContainer}>
           <OptionSelector
             label="Filter"
             value={filter}
@@ -49,29 +87,17 @@ function FilterToolCore(props: { fileUploaderProps: FileUploaderResult }) {
             options={filterOptions}
           />
           
-          <div className="relative w-full rounded-lg border border-gray-200 bg-white p-4">
-            <img
-              src={props.fileUploaderProps.file.content}
-              alt="Preview"
-              className="mx-auto max-h-[500px] w-full object-contain"
-              style={filterStyles[filter]}
-            />
-            <div className="absolute top-2 right-2">
-              <div className="rounded-md bg-gray-900/80 px-3 py-1.5 text-xs text-white backdrop-blur">
-                {props.fileUploaderProps.file.metadata.width} x {props.fileUploaderProps.file.metadata.height}
-              </div>
-            </div>
-          </div>
+          <ImagePreview
+            src={props.fileUploaderProps.file.content}
+            metadata={props.fileUploaderProps.file.metadata}
+            style={filterStyles[filter]}
+          />
 
-          <div className="flex justify-center">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-200 active:bg-gray-300"
-              onClick={props.fileUploaderProps.cancel}
-            >
-              Choose Another Image
-            </button>
-          </div>
+          <ActionButtons
+            onDownload={handleDownload}
+            onCancel={props.fileUploaderProps.cancel}
+            downloadText={`Download ${filter !== "none" ? filter : ""} Image`}
+          />
         </div>
       )}
     </div>
